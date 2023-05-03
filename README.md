@@ -12,7 +12,7 @@ Just run `make`.
 
 In a system with 2 sockets and 2 threads per core
 ```
-OMP_NUM_THREADS=10 ./tpin.out
+OMP_NUM_THREADS=10 ./tpin
 ```
 _could_ print:
 ```
@@ -38,7 +38,7 @@ The last row is the total number of threads that have been pinned to each
 physical core.
 
 ```
-OMP_NUM_THREADS=5 taskset -c 6,8 ./tpin.out 2 2
+OMP_NUM_THREADS=5 taskset -c 6,8 ./tpin 2 2
 ```
 _could_ print:
 ```
@@ -51,7 +51,7 @@ _could_ print:
 ```
 
 ```
-OMP_NUM_THREADS=28 OMP_PLACES=0:14:2,1:14:2 ./tpin.out
+OMP_NUM_THREADS=28 OMP_PLACES=0:14:2,1:14:2 ./tpin
 ```
 _will_ print:
 ```
@@ -87,7 +87,7 @@ _will_ print:
 ```
 
 ```
-OMP_NUM_THREADS=28 OMP_PLACES=0:28 ./tpin.out
+OMP_NUM_THREADS=28 OMP_PLACES=0:28 ./tpin
 ```
 _will_ print:
 ```

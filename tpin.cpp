@@ -6,25 +6,20 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-  if (argc < 3) {
-    printf("Usage: %s <nthreads_per_core> <nsockets>\n", argv[0]);
-    return 1;
-  }
-
-  int nthreads_per_core = atoi(argv[1]);
-  int nsockets = atoi(argv[2]);
+  int nthreads_per_core = THREADS_PER_CORE;
+  int ndomains = NUMA_DOMAINS;
   int ncores = thread::hardware_concurrency() / nthreads_per_core;
-  int ncores_per_socket = ncores / nsockets;
+  int ncores_per_domain = ncores / ndomains;
 
-  vector<vector<int>> pin_counter(nsockets, vector<int>(ncores_per_socket, 0));
+  vector<vector<int>> pin_counter(ndomains, vector<int>(ncores_per_domain, 0));
 
   #pragma omp parallel
   {
     int tid = omp_get_thread_num();
     int cpu = sched_getcpu();
     int n = omp_get_num_threads();
-    int sock = cpu % nsockets;
-    int core = (cpu / nsockets) % ncores_per_socket;
+    int sock = cpu % ndomains;
+    int core = (cpu / ndomains) % ncores_per_domain;
     int hw_thread_idx = cpu / ncores;
 
     #pragma omp atomic
@@ -32,8 +27,8 @@ int main(int argc, char *argv[]) {
 
     string graphical = "";
 
-    for (int j = 0; j < nsockets; j++) {
-      string s(ncores_per_socket, '-');
+    for (int j = 0; j < ndomains; j++) {
+      string s(ncores_per_domain, '-');
       if (j == sock) {
         s[core] = '0' + hw_thread_idx;
       }
@@ -50,7 +45,7 @@ int main(int argc, char *argv[]) {
   }
 
   string pinned = "";
-  for (int i = 0; i < nsockets; i++) {
+  for (int i = 0; i < ndomains; i++) {
     string tmp = "";
     for (auto c : pin_counter[i]) {
       if (c == 0) {

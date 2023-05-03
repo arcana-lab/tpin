@@ -1,0 +1,2 @@
+tpin:
+	./compile.sh
