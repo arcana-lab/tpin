@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <vector>
 #include <thread>
+#include <sched.h>
 #include <omp.h>
 
 using namespace std;
