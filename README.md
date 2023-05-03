@@ -5,7 +5,7 @@ This is helpful to test the effect of environment variables like [`OMP_PLACES`](
 simply test [`taskset`](https://man7.org/linux/man-pages/man1/taskset.1.html).
 
 It assumes that hardware threads are numbered such that the i-th CPU is on NUMA domains _i mod N_ where _N_ is the number of domains.
-This assumption might not hold on your current machine.
+This assumption might not hold on your current machine. Check `lscpu`.
 
 ## Build
 
@@ -42,7 +42,7 @@ The last row is the total number of threads that have been pinned to each
 physical core.
 
 ```
-OMP_NUM_THREADS=5 taskset -c 6,8 ./tpin 2 2
+OMP_NUM_THREADS=5 taskset -c 6,8 ./tpin
 ```
 _could_ print:
 ```
