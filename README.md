@@ -162,3 +162,9 @@ which _could_ print:
  27 on  27 [--------------] [-------------0]
            [11111111111111] [11111111111111]
 ```
+Other configurations:
+```
+OMP_PLACES="sockets(2)"     # use only two sockets
+OMP_PLACES="threads(14)"    # use only 14 hardware threads
+OMP_PLACES="cores(28)"      # use only 28 cores, avoid having two OMP threads per physical core
+```
