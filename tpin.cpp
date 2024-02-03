@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     }
     pinned += "[" + tmp + "] ";
   }
-  printf("           %s\n", pinned.c_str());
+  printf("    counts %s\n", pinned.c_str());
 
   return 0;
 }
