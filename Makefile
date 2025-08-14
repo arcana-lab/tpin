@@ -1,10 +1,5 @@
 tpin:
-	clang++ \
-	  -DTHREADS_PER_CORE=$$(lscpu | grep "Thread(s)" | egrep -o "[0-9]+") \
-	  -DNUMA_DOMAINS=$$(lscpu | grep "NUMA node(s)" | egrep -o "[0-9]+") \
-	  -fopenmp \
-	  -o tpin \
-	  tpin.cpp
+	clang++ -fopenmp -std=c++17 tpin.cpp -o tpin
 
 clean:
 	rm -f tpin

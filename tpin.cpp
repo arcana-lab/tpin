@@ -1,21 +1,59 @@
 #include <cstdio>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
 #include <omp.h>
+#include <regex>
 #include <sched.h>
 #include <string>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 
 using namespace std;
+namespace fs = std::filesystem;
+
+int get_number_of_numa_domains() {
+  const std::string numa_path = "/sys/devices/system/node";
+  std::regex node_regex("node[0-9]+");
+  int count = 0;
+
+  for (const auto &entry : fs::directory_iterator(numa_path)) {
+    if (fs::is_directory(entry)) {
+      std::string name = entry.path().filename().string();
+      if (std::regex_match(name, node_regex)) {
+        ++count;
+      }
+    }
+  }
+
+  return count;
+}
+
+int get_threads_per_core() {
+  std::ifstream file("/sys/devices/system/cpu/cpu0/topology/core_cpus_list");
+  std::string line;
+  if (std::getline(file, line)) {
+    int count = 1;
+    for (char c : line) {
+      if (c == ',') {
+        count++;
+      }
+    }
+    return count;
+  }
+  return 1;
+}
 
 int main(int argc, char *argv[]) {
-  int nthreads_per_core = THREADS_PER_CORE;
-  int ndomains = NUMA_DOMAINS;
+  int nthreads_per_core = get_threads_per_core();
+  int ndomains = get_number_of_numa_domains();
   int ncores = thread::hardware_concurrency() / nthreads_per_core;
   int ncores_per_domain = ncores / ndomains;
 
   vector<vector<int>> pin_counter(ndomains, vector<int>(ncores_per_domain, 0));
 
-  #pragma omp parallel
+#pragma omp parallel
   {
     int tid = omp_get_thread_num();
     int cpu = sched_getcpu();
@@ -24,7 +62,7 @@ int main(int argc, char *argv[]) {
     int core = (cpu / ndomains) % ncores_per_domain;
     int hw_thread_idx = cpu / ncores;
 
-    #pragma omp atomic
+#pragma omp atomic
     pin_counter[sock][core]++;
 
     string graphical = "";
@@ -37,9 +75,9 @@ int main(int argc, char *argv[]) {
       graphical += "[" + s + "] ";
     }
 
-    #pragma omp for ordered
+#pragma omp for ordered
     for (int i = 0; i < n; i++) {
-      #pragma omp ordered
+#pragma omp ordered
       if (tid == i) {
         printf("%3i on %3i %s\n", tid, cpu, graphical.c_str());
       }
