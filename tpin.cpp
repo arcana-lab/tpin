@@ -10,6 +10,10 @@
 #include <unordered_map>
 #include <vector>
 
+#ifndef __clang__
+#error "This code must be compiled with clang++"
+#endif
+
 using namespace std;
 namespace fs = std::filesystem;
 
