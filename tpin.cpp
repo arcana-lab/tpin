@@ -46,6 +46,15 @@ int get_threads_per_core() {
 }
 
 int main(int argc, char *argv[]) {
+  // Check for -l or --list arguments
+  bool csv_print = false;
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--list") == 0) {
+      csv_print = true;
+      break;
+    }
+  }
+
   int nthreads_per_core = get_threads_per_core();
   int ndomains = get_number_of_numa_domains();
   int ncores = thread::hardware_concurrency() / nthreads_per_core;
@@ -57,7 +66,7 @@ int main(int argc, char *argv[]) {
   {
     int tid = omp_get_thread_num();
     int cpu = sched_getcpu();
-    int n = omp_get_num_threads();
+    int N = omp_get_num_threads();
     int sock = cpu % ndomains;
     int core = (cpu / ndomains) % ncores_per_domain;
     int hw_thread_idx = cpu / ncores;
@@ -76,10 +85,14 @@ int main(int argc, char *argv[]) {
     }
 
 #pragma omp for ordered
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < N; i++) {
 #pragma omp ordered
       if (tid == i) {
-        printf("%3i on %3i %s\n", tid, cpu, graphical.c_str());
+        if (csv_print) {
+          printf("%i%s", cpu, (i == N - 1) ? "\n" : ",");
+        } else {
+          printf("%3i on %3i %s\n", tid, cpu, graphical.c_str());
+        }
       }
     }
   }
@@ -98,7 +111,9 @@ int main(int argc, char *argv[]) {
     }
     pinned += "[" + tmp + "] ";
   }
-  printf("    counts %s\n", pinned.c_str());
+  if (!csv_print) {
+    printf("    counts %s\n", pinned.c_str());
+  }
 
   return 0;
 }
